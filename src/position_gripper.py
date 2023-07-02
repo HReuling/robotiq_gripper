@@ -8,9 +8,9 @@ from std_msgs.msg import Int16
 import numpy as np
 
 class SpacenavToGripper():
-    def __init__(self) -> None:
+    def __init__(self, usb_port) -> None:
         # serial connection to the gripper
-        self.ser = serial.Serial(port='/dev/ttyUSB0',baudrate=115200,timeout=1,parity=serial.PARITY_NONE,stopbits=serial.STOPBITS_ONE,bytesize=serial.EIGHTBITS)
+        self.ser = serial.Serial(port=usb_port,baudrate=115200,timeout=1,parity=serial.PARITY_NONE,stopbits=serial.STOPBITS_ONE,bytesize=serial.EIGHTBITS)
 
         # initialize connection
         self.ser.write(b'\x09\x10\x03\xE8\x00\x03\x06\x00\x00\x00\x00\x00\x00\x73\x30')
@@ -39,6 +39,7 @@ class SpacenavToGripper():
         # keep the node running
         while not rospy.is_shutdown():
             self.rate.sleep()
+            
 
     def position_change_cb(self, data):
         # callback function when the position has changed
@@ -50,6 +51,7 @@ class SpacenavToGripper():
             # send data
             self.ser.write(msg)
             time.sleep(0.01)
+            
 
     def build_msg(self, position:int):
         # beginning for the command to go to requested position
@@ -63,6 +65,7 @@ class SpacenavToGripper():
         # transform the string to bytes
         msg_bytes = bytes.fromhex(bytes(msg, 'utf-8').decode().replace('x', ''))
         return msg_bytes
+        
 
     def modbusCrc(self, msg:str):
         '''
@@ -85,6 +88,12 @@ class SpacenavToGripper():
         elif len(res)<4: res = "0" + res
         # change the order of the two numbers
         return " x" + res[2:] + " x" + res[:2]
+        
     
 if __name__ == '__main__':
+    try:
+        usb_port = rospy.get_param('~usb_port')
+    except:
+        usb_port = '/dev/ttyUSB0'
+        rospy.loginfo("USB Port didn't set, falling back to /dev/ttyUSB0")
     spacenav_to_gripper = SpacenavToGripper()
