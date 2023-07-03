@@ -27,7 +27,7 @@ class SpacenavToGripper():
         print ("Response 2 " + str(data))
         time.sleep(1)
 
-        # initialize position to zero
+        # initialize position to zero<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
         self.position = 0
 
         # subscriber for the target position
@@ -96,4 +96,4 @@ if __name__ == '__main__':
     except:
         usb_port = '/dev/ttyUSB0'
         rospy.loginfo("USB Port didn't set, falling back to /dev/ttyUSB0")
-    spacenav_to_gripper = SpacenavToGripper()
+    spacenav_to_gripper = SpacenavToGripper(usb_port)
